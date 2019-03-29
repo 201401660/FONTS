@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# make 399 Template file
+
 from __future__ import print_function
 from __future__ import absolute_import
 
@@ -115,7 +117,7 @@ if __name__ == "__main__":
     charset1 = charset_[0]
     charset2 = charset_[1]
     charset3 = charset_[2]
-    #
+
     # makeTemplate(charset1, '/usr/share/fonts/truetype/nanum/NanumGothic.ttf', space=256, outputName='output1.png')
     # makeTemplate(charset2, '/usr/share/fonts/truetype/nanum/NanumGothic.ttf', space=256, outputName='output2.png')
     # makeTemplate(charset3, '/usr/share/fonts/truetype/nanum/NanumGothic.ttf', space=256, outputName='output3.png')
