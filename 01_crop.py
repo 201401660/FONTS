@@ -95,25 +95,3 @@ for i in rect:
 
 
 
-# for ctr in rect:
-#     # print(ctr)
-#     x,y,w,h = ctr
-#     cv2.rectangle(image, (x, y), (x + w, y + h), (255, 0, 0), 3)
-#     cv2.namedWindow('marked areas', cv2.WINDOW_NORMAL)
-#     cv2.imshow('marked areas', image)
-#     cv2.waitKey(0)
-#
-#     # if w >= 135 and h >= 135:
-#     #     cv2.imwrite('/home/malab2/PycharmProjects/FONTS/image/{}.png'.format(i), roi)
-#
-#
-#
-#
-#
-#
-#
-#     # cv2.waitKey(0)
-
-
-
-
