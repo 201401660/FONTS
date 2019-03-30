@@ -1,3 +1,4 @@
+import os
 import cv2
 import numpy as np
 
@@ -8,6 +9,13 @@ import cv2
 def chunksList(List,size):
     for i in range(0, len(List), size):
         yield List[i : i + size]
+
+
+def crop (img_dir):
+    imgList = os.listdir(img_dir)
+    for img in imgList:
+        image = cv2.imread(os.path.join(img_dir,img))
+
 
 
 # template size 280 X 200 mm
@@ -24,12 +32,14 @@ H,W = gray.shape
 cv2.namedWindow('gray', cv2.WINDOW_NORMAL)
 cv2.imshow('gray', gray)
 cv2.waitKey(0)
+
 #binary
 ret,thresh = cv2.threshold(gray,0,255,cv2.THRESH_OTSU|cv2.THRESH_BINARY_INV)
 
 cv2.namedWindow('second', cv2.WINDOW_NORMAL)
 cv2.imshow('second', thresh)
 cv2.waitKey(0)
+
 #dilation
 kernel = np.ones((13,13), np.uint8)
 img_dilation = cv2.dilate(thresh, kernel, iterations=1)
@@ -40,8 +50,10 @@ cv2.waitKey(0)
 
 #find contours
 ctrs, hier = cv2.findContours(img_dilation.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+
 #sort contours
 sorted_ctrs = sorted(ctrs, key=lambda ctr: cv2.boundingRect(ctr)[0])
+
 
 cnt = 0
 rect = []
@@ -73,16 +85,29 @@ rect = sorted(rect , key=lambda k: [k[1]])
 rect = list(chunksList(rect,12))
 
 
-for i in rect:
-    print(i)
-    i = sorted(i, key=lambda k: [k[0]])
-    for ctr in i:
-        x, y, w, h = ctr
+idx = 0
+f = open('399-uniform.txt','r')
+charList = f.readlines()
+
+for i in range(len(charList)):
+    charList[i] = charList[i].strip()
+
+
+
+for row in rect:
+    print(row)
+    i = sorted(row, key=lambda k: [k[0]])
+    for rec in row:
+        x, y, w, h = rec
         roi = image[y:y + h + 1, x:x + w + 1] # 1 is margin
 
         cv2.namedWindow('marked areas', cv2.WINDOW_NORMAL)
         cv2.imshow('marked areas', roi)
-        cv2.waitKey(100)
+        cv2.waitKey(10)
+
+        cv2.imwrite('/home/malab2/PycharmProjects/FONTS/output/'+charList[idx]+'.png', roi)
+
+        idx += 1
 
         # cv2.imwrite('/home/malab2/PycharmProjects/FONTS/output/test.png', roi)
         # cv2.rectangle(image, (x, y), (x + w, y + h), (255, 0, 0), 3)
