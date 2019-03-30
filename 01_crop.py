@@ -92,6 +92,9 @@ charList = f.readlines()
 for i in range(len(charList)):
     charList[i] = charList[i].strip()
 
+# case2
+# charList = [i.strip() for i in charList]
+
 
 
 for row in rect:
