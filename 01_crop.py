@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import os
 import cv2
 import numpy as np
@@ -11,115 +13,108 @@ def chunksList(List,size):
         yield List[i : i + size]
 
 
-def crop (img_dir):
-    imgList = os.listdir(img_dir)
-    for img in imgList:
-        image = cv2.imread(os.path.join(img_dir,img))
-
-
-
 # template size 280 X 200 mm
 # space size    1.5 X 1.5 mm
 
-#image = cv2.imread('/home/malab2/PycharmProjects/FONTS/image/template.png')
-image = cv2.imread('/home/malab2/PycharmProjects/FONTS/image/1.jpg')
+def crop (img_dir):
 
-#grayscale
-gray = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
-H,W = gray.shape
+    imgList = sorted(os.listdir(img_dir))
 
+    idx = 0
+    f = open('399-uniform.txt', 'r')
+    charList = f.readlines()
 
-cv2.namedWindow('gray', cv2.WINDOW_NORMAL)
-cv2.imshow('gray', gray)
-cv2.waitKey(0)
-
-#binary
-ret,thresh = cv2.threshold(gray,0,255,cv2.THRESH_OTSU|cv2.THRESH_BINARY_INV)
-
-cv2.namedWindow('second', cv2.WINDOW_NORMAL)
-cv2.imshow('second', thresh)
-cv2.waitKey(0)
-
-#dilation
-kernel = np.ones((13,13), np.uint8)
-img_dilation = cv2.dilate(thresh, kernel, iterations=1)
-
-cv2.namedWindow('dilated', cv2.WINDOW_NORMAL)
-cv2.imshow('dilated', img_dilation)
-cv2.waitKey(0)
-
-#find contours
-ctrs, hier = cv2.findContours(img_dilation.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-
-#sort contours
-sorted_ctrs = sorted(ctrs, key=lambda ctr: cv2.boundingRect(ctr)[0])
+    for i in range(len(charList)):
+        charList[i] = charList[i].strip()  # strip : delete '\n'
 
 
-cnt = 0
-rect = []
+    for img in imgList:
+        image = cv2.imread(os.path.join(img_dir,img))
 
-for i, ctr in enumerate(sorted_ctrs):
-    # Get bounding box
+        # grayscale
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        H, W = gray.shape
 
-    x, y, w, h = cv2.boundingRect(ctr)
+        # cv2.namedWindow('gray', cv2.WINDOW_NORMAL)
+        # cv2.imshow('gray', gray)
+        # cv2.waitKey(0)
 
-    print("H", h / float(H), "w", w / float(W))
+        # binary
+        ret, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_OTSU | cv2.THRESH_BINARY_INV)
 
-    # Getting ROI
-    roi = image[y:y + h, x:x + w]
+        # cv2.namedWindow('second', cv2.WINDOW_NORMAL)
+        # cv2.imshow('second', thresh)
+        # cv2.waitKey(0)
 
-    # show ROI
-    # cv2.imshow('segment no:'+str(i),roi)
+        # dilation
+        kernel = np.ones((13, 13), np.uint8)
+        img_dilation = cv2.dilate(thresh, kernel, iterations=1)
 
-    if h / float(H) >= 0.045 and w / float(W) >= 0.065:
-        rect.append([x,y,w,h])
-        #cv2.rectangle(image, (x, y), (x + w, y + h), (171, 255, 0), 3)
-        #cv2.namedWindow('marked areas', cv2.WINDOW_NORMAL)
-        #cv2.imshow('marked areas', image)
-        #cv2.waitKey(0)
-        cnt = cnt+1
+        # cv2.namedWindow('dilated', cv2.WINDOW_NORMAL)
+        # cv2.imshow('dilated', img_dilation)
+        # cv2.waitKey(0)
 
-del rect[0]
-print(len(rect))
-rect = sorted(rect , key=lambda k: [k[1]])
-rect = list(chunksList(rect,12))
+        # find contours
+        ctrs, hier = cv2.findContours(img_dilation.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
 
+        # sort contours - 안해도 상관없음
+        sorted_ctrs = sorted(ctrs, key=lambda ctr: cv2.boundingRect(ctr)[0])
 
-idx = 0
-f = open('399-uniform.txt','r')
-charList = f.readlines()
+        cnt = 0
+        rect = []
 
-for i in range(len(charList)):
-    charList[i] = charList[i].strip()
+        for i, ctr in enumerate(sorted_ctrs):
+            # Get bounding box
 
-# case2
-# charList = [i.strip() for i in charList]
+            x, y, w, h = cv2.boundingRect(ctr)
 
+            print("H", h / float(H), "w", w / float(W))
 
+            # Getting ROI
+            roi = image[y:y + h, x:x + w]
 
-for row in rect:
-    print(row)
-    i = sorted(row, key=lambda k: [k[0]])
-    for rec in row:
-        x, y, w, h = rec
-        roi = image[y:y + h + 1, x:x + w + 1] # 1 is margin
+            # show ROI
+            # cv2.imshow('segment no:'+str(i),roi)
 
-        cv2.namedWindow('marked areas', cv2.WINDOW_NORMAL)
-        cv2.imshow('marked areas', roi)
-        cv2.waitKey(10)
+            if 0.045 <= h / float(H) < 0.9 and 0.065 <= w / float(W) < 0.9:
+                rect.append([x, y, w, h])
+                print('xywh:', [x, y, w, h])
 
-        cv2.imwrite('/home/malab2/PycharmProjects/FONTS/output/'+charList[idx]+'.png', roi)
+                cnt = cnt + 1
 
-        idx += 1
+        # [ x,y,w,h ] 중 y 값에 대해 정렬 => row 만큼 묶을 수 있게 됨
+        rect = sorted(rect, key=lambda k: [k[1]])
 
-        # cv2.imwrite('/home/malab2/PycharmProjects/FONTS/output/test.png', roi)
-        # cv2.rectangle(image, (x, y), (x + w, y + h), (255, 0, 0), 3)
-        # cv2.namedWindow('marked areas', cv2.WINDOW_NORMAL)
-        # cv2.imshow('marked areas', image)
-        # cv2.waitKey(1)
+        print('selected rectangle:', rect)
 
+        rect = list(chunksList(rect, 12))  # 12개(= 1 row )만큼씩 묶어줌
 
+        # case2
+        # charList = [i.strip() for i in charList]
 
+        for row in rect:
+            print(row)
+            row = sorted(row, key=lambda k: [k[0]])  # row별로 column(=x 좌표)에 대해 정렬
+            for rec in row:
+                x, y, w, h = rec
+                roi = image[y:y + h + 1, x:x + w + 1]  # 1 is margin
+
+                cv2.namedWindow('marked areas', cv2.WINDOW_NORMAL)
+                cv2.imshow('marked areas', roi)
+                cv2.waitKey(10)
+
+                # cv2.rectangle(image, (x, y), (x + w, y + h), (171, 255, 0), 3)
+                # cv2.namedWindow('marked areas', cv2.WINDOW_NORMAL)
+                # cv2.imshow('marked areas', image)
+                # cv2.waitKey(0)
+
+                cv2.imwrite('/home/malab2/PycharmProjects/FONTS/output/' + charList[idx] + '.png', roi)
+                idx += 1
+
+                if idx == 399:
+                    return
 
 
 
+if __name__ == '__main__':
+    crop('/home/malab2/PycharmProjects/FONTS/image')
