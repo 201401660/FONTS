@@ -40,7 +40,7 @@ def makeTemplate (charset, font, space, outputName='output.png'):
 
     # draw character
     for c in charset:
-        cImg = draw_single_char(c, src_font, space ,x_offset=100, y_offset=10)
+        cImg = draw_single_char(c, src_font, space ,x_offset=100, y_offset=0) # (100,0) 위치에서 시작
         canvas.paste(cImg, ( x_pos*space, y_pos*(space + y_margin) ))
         x_pos = x_pos + 1
         if x_pos >= 12:
@@ -82,6 +82,7 @@ def makeTemplate (charset, font, space, outputName='output.png'):
     canvas.save(outputName)
 
 
+
 def select_sample(charset):
     # this returns 399 samples from KR charset
     # we selected 399 characters to sample as uniformly as possible
@@ -121,3 +122,7 @@ if __name__ == "__main__":
     # makeTemplate(charset1, '/usr/share/fonts/truetype/nanum/NanumGothic.ttf', space=256, outputName='output1.png')
     # makeTemplate(charset2, '/usr/share/fonts/truetype/nanum/NanumGothic.ttf', space=256, outputName='output2.png')
     # makeTemplate(charset3, '/usr/share/fonts/truetype/nanum/NanumGothic.ttf', space=256, outputName='output3.png')
+
+    makeTemplate(charset1, '/usr/share/fonts/truetype/unfonts-core/UnDinaru.ttf', space=256, outputName='template1.png')
+    makeTemplate(charset2, '/usr/share/fonts/truetype/unfonts-core/UnDinaru.ttf', space=256, outputName='template2.png')
+    makeTemplate(charset3, '/usr/share/fonts/truetype/unfonts-core/UnDinaru.ttf', space=256, outputName='template3.png')
