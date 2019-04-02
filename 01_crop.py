@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import os
-import cv2
-import numpy as np
-
-# must import if working with opencv in python
 import numpy as np
 import cv2
 
@@ -42,20 +38,20 @@ def crop (img_dir):
         # binary
         ret, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_OTSU | cv2.THRESH_BINARY_INV)
 
-        # cv2.namedWindow('second', cv2.WINDOW_NORMAL)
-        # cv2.imshow('second', thresh)
-        # cv2.waitKey(0)
+        cv2.namedWindow('second', cv2.WINDOW_NORMAL)
+        cv2.imshow('second', thresh)
+        cv2.waitKey(0)
 
         # dilation
         kernel = np.ones((13, 13), np.uint8)
         img_dilation = cv2.dilate(thresh, kernel, iterations=1)
 
-        # cv2.namedWindow('dilated', cv2.WINDOW_NORMAL)
-        # cv2.imshow('dilated', img_dilation)
-        # cv2.waitKey(0)
+        cv2.namedWindow('dilated', cv2.WINDOW_NORMAL)
+        cv2.imshow('dilated', img_dilation)
+        cv2.waitKey(0)
 
         # find contours
-        ctrs, hier = cv2.findContours(img_dilation.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+        ctrs, _ = cv2.findContours(img_dilation.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE) # ex) ctrs : 753 개 : 753개의 윤곽선이 검출되었다. 해당 윤곽선은 리스트 형태로 구성
 
         # sort contours - 안해도 상관없음
         sorted_ctrs = sorted(ctrs, key=lambda ctr: cv2.boundingRect(ctr)[0])
@@ -78,37 +74,41 @@ def crop (img_dir):
 
             if 0.045 <= h / float(H) < 0.9 and 0.065 <= w / float(W) < 0.9:
                 rect.append([x, y, w, h])
-                print('xywh:', [x, y, w, h])
+                #print('xywh:', [x, y, w, h])
 
                 cnt = cnt + 1
 
         # [ x,y,w,h ] 중 y 값에 대해 정렬 => row 만큼 묶을 수 있게 됨
         rect = sorted(rect, key=lambda k: [k[1]])
 
-        print('selected rectangle:', rect)
-
         rect = list(chunksList(rect, 12))  # 12개(= 1 row )만큼씩 묶어줌
 
         # case2
+
         # charList = [i.strip() for i in charList]
 
         for row in rect:
-            print(row)
+            #print(row)
             row = sorted(row, key=lambda k: [k[0]])  # row별로 column(=x 좌표)에 대해 정렬
             for rec in row:
                 x, y, w, h = rec
                 roi = image[y:y + h + 1, x:x + w + 1]  # 1 is margin
 
-                cv2.namedWindow('marked areas', cv2.WINDOW_NORMAL)
-                cv2.imshow('marked areas', roi)
-                cv2.waitKey(10)
-
-                # cv2.rectangle(image, (x, y), (x + w, y + h), (171, 255, 0), 3)
                 # cv2.namedWindow('marked areas', cv2.WINDOW_NORMAL)
-                # cv2.imshow('marked areas', image)
-                # cv2.waitKey(0)
+                # cv2.imshow('marked areas', roi)
+                # cv2.waitKey(10)
 
-                cv2.imwrite('/home/malab2/PycharmProjects/FONTS/output/' + charList[idx] + '.png', roi)
+                #
+                # cv2.imwrite('/home/malab2/PycharmProjects/FONTS/output/uni' + charList[idx] + '.png', roi)
+
+                cv2.rectangle(image, (x, y), (x + w, y + h), (171, 255, 0), 3)
+                cv2.namedWindow('marked areas', cv2.WINDOW_NORMAL)
+                cv2.imshow('marked areas', image)
+                cv2.waitKey(1000)
+
+
+                #cv2.imwrite('/home/malab2/PycharmProjects/FONTS/output/uni' + charList[idx] + '.png', roi)
+
                 idx += 1
 
                 if idx == 399:
