@@ -2,6 +2,7 @@
 # crop template
 
 import os
+import argparse
 import numpy as np
 import cv2
 from PIL import Image
@@ -13,29 +14,24 @@ def chunksList(List,size):
     for i in range(0, len(List), size):
         yield List[i : i + size]
 
-
 # template size 280 X 200 mm
 # space size    1.5 X 1.5 mm
 
-def crop (img_dir):
+def crop_image_uniform(src_dir, dst_dir):
+    if not os.path.exists(dst_dir):
+        os.makedirs(dst_dir)
 
-    imgList = sorted(os.listdir(img_dir))
+    imgList = sorted(os.listdir(src_dir))
 
     # unicode list matching template image
     idx = 0
     f = open('399-uniform.txt', 'r')
     charList = f.readlines()
-
-    # case1
-    for i in range(len(charList)):
-        charList[i] = charList[i].strip()  # strip : delete '\n'
-
-    # case2
-    # charList = [i.strip() for i in charList]
+    charList = [i.strip() for i in charList] # strip : delete '\n'
 
     # crop image
     for img in imgList:
-        image = cv2.imread(os.path.join(img_dir,img))
+        image = cv2.imread(os.path.join(src_dir,img))
 
         # grayscale
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -64,7 +60,6 @@ def crop (img_dir):
         # opencv > 4.0 ------------ ctrs,_ =
         # opencv < 4.0 ------------ _, ctrs, _ =
         ctrs, _ = cv2.findContours(img_dilation.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-
 
         cnt = 0
         rect = []
@@ -105,21 +100,25 @@ def crop (img_dir):
                 dilated_image = cv2.dilate(roi, open_kernel, iterations=1)
                 dilated_image = ~dilated_image
                 contours, _ = cv2.findContours(dilated_image, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-                #_r = sorted([ cv2.contourArea(contour) for contour in enumerate(contours)])[-2]
-                #_r = sorted([cv2.contourArea(r) for r in contours])[-2]
+                contours.sort(key=cv2.contourArea)
 
                 # not save image not detected contour
                 try:
-                    _r = ([contour for contour in contours])[-2]
-
+                    _r = [contour for contour in contours][-2]
+                    #_r = sorted([contour for contour in contours if cv2.contourArea(contour)<16000])[-1]
+                    #print(_r)
                 except:
-
                     idx += 1
                     continue
-
+                # for contour in contours:
+                #     _x, _y, _w, _h= cv2.boundingRect(contour)
+                #     img1 = cv2.rectangle(dilated_image, (_x, _y), (_x + _w, _y + _h), 10)
+                # cv2.imshow('test', img1)
+                # cv2.waitKey(0)
                 _x, _y, _w, _h = cv2.boundingRect(_r)
-                # img1 = cv2.rectangle(dilated_image, (_x, _y), (_x + _w, _y + _h), 7)
-                # cv2.imshow('test',img1)
+
+                #img1 = cv2.rectangle(dilated_image, (_x, _y), (_x + _w, _y + _h), 7)
+
 
                 # make empty white image
                 background = np.zeros([128,128],dtype=np.uint8)
@@ -156,8 +155,8 @@ def crop (img_dir):
 
 
                 # Processing to make the writing clearer
-                img = Image.fromarray(background)
-                enhancerimg = ImageEnhance.Contrast(img)
+                img_arr = Image.fromarray(background)
+                enhancerimg = ImageEnhance.Contrast(img_arr)
                 _image = enhancerimg.enhance(1.5)
                 opencv_image = np.array(_image)
                 opencv_image = cv2.bilateralFilter(opencv_image, 9, 30, 30)
@@ -167,16 +166,21 @@ def crop (img_dir):
                 cv2.waitKey(1)
 
                 # Save image
-                cv2.imwrite('/home/malab2/PycharmProjects/FONTS/template_YJ/output_YJ/uni' + charList[idx] + '.png', opencv_image)
+                name = dst_dir + '/uni' + charList[idx] + '.png'
+                cv2.imwrite(name, opencv_image)
+                #cv2.imwrite('/home/yejin/PycharmProjects/FONTS/template_YJ/output_YJ/uni' + charList[idx] + '.png', opencv_image)
 
                 idx += 1
 
-                if idx == 399:
+                if idx == len(charList):
                     return
 
+parser = argparse.ArgumentParser(description='Crop scanned images to character images')
+parser.add_argument('--src_dir', dest='src_dir', required=True, help='directory to read scanned images')
+parser.add_argument('--dst_dir', dest='dst_dir', required=True, help='directory to save character images')
+args = parser.parse_args()
 
 
 if __name__ == '__main__':
-    crop('/home/malab2/PycharmProjects/FONTS/template_YJ')
-    #crop('/home/yejin/PycharmProjects/font/template')
-
+    #crop('/home/malab2/PycharmProjects/FONTS/template_YJ')
+    crop_image_uniform(args.src_dir, args.dst_dir)
