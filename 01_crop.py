@@ -106,6 +106,10 @@ def crop_image_uniform(src_dir, dst_dir):
                 try:
                     _r = [contour for contour in contours][-2]
                     #_r = sorted([contour for contour in contours if cv2.contourArea(contour)<16000])[-1]
+
+                # not save image not detected contour
+                try:
+                    _r = sorted([contour for contour in contours if cv2.contourArea(contour)<16000])[-1]
                     #print(_r)
                 except:
                     idx += 1
@@ -184,3 +188,4 @@ args = parser.parse_args()
 if __name__ == '__main__':
     #crop('/home/malab2/PycharmProjects/FONTS/template_YJ')
     crop_image_uniform(args.src_dir, args.dst_dir)
+

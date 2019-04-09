@@ -168,3 +168,5 @@ if __name__ == "__main__":
     font2img(args.src_font, args.dst_font, charset, args.char_size,
              args.canvas_size, args.x_offset, args.y_offset,
              args.sample_count, args.sample_dir, args.label, args.filter,  args.handwriting_dir)
+
+
