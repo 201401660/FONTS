@@ -143,15 +143,26 @@ def crop_image_uniform(src_dir, dst_dir):
 
                 # resize according to width and height
                 if _w > _h:
-                    height_size = 90 * _h / _w
+                    height_size = 128 * _h / _w
                     #print('h',height_size)
-                    cropped_image = cv2.resize(cropped_image,(90, height_size))
-                    background[int(64 - height_size / 2):int(64 - height_size / 2)+ cropped_image.shape[0],19:19+ cropped_image.shape[1]] = cropped_image
+                    cropped_image = cv2.resize(cropped_image,(128, height_size))
+                    background[int(64 - height_size / 2):int(64 - height_size / 2) + cropped_image.shape[0],:cropped_image.shape[1]] = cropped_image
                 else:
-                    width_size = 90 * _w / _h
+                    width_size = 128 * _w / _h
                     #print('w',width_size)
-                    cropped_image = cv2.resize(cropped_image,(width_size, 90))
-                    background[19:19+cropped_image.shape[0], int(64 - width_size / 2):int(64 - width_size / 2)+ cropped_image.shape[1]] = cropped_image
+                    cropped_image = cv2.resize(cropped_image,(width_size, 128))
+                    background[:cropped_image.shape[0], int(64 - width_size / 2):int(64 - width_size / 2)+ cropped_image.shape[1]] = cropped_image
+
+                # if _w > _h:
+                #     height_size = 90 * _h / _w
+                #     #print('h',height_size)
+                #     cropped_image = cv2.resize(cropped_image,(90, height_size))
+                #     background[int(64 - height_size / 2):int(64 - height_size / 2)+ cropped_image.shape[0],19:19+ cropped_image.shape[1]] = cropped_image
+                # else:
+                #     width_size = 90 * _w / _h
+                #     #print('w',width_size)
+                #     cropped_image = cv2.resize(cropped_image,(width_size, 90))
+                #     background[19:19+cropped_image.shape[0], int(64 - width_size / 2):int(64 - width_size / 2)+ cropped_image.shape[1]] = cropped_image
 
 
                 # Processing to make the writing clearer
